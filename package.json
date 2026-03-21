@@ -1,6 +1,6 @@
 {
   "name": "video-toolbox",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A visual video processing toolbox",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -16,7 +16,7 @@
   },
   "build": {
     "appId": "com.video-toolbox.app",
-    "productName": "FFmpeg工具箱",
+    "productName": "视频工具箱",
     "directories": {
       "output": "release"
     },

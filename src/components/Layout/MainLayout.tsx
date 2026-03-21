@@ -63,7 +63,7 @@ export function MainLayout() {
             whiteSpace: 'nowrap',
             overflow: 'hidden',
           }}>
-            {collapsed ? 'FFmpeg' : 'FFmpeg工具箱'}
+            {collapsed ? '视频' : '视频工具箱'}
           </span>
         </div>
         <Sidebar collapsed={collapsed} />
