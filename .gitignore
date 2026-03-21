@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-electron/
+out/
+build/
+*.electron/
+resources/ffmpeg/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage/
+.nyc_output/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+
+# Electron
+release/
+*.dmg
+*.AppImage
+*.snap
+*.deb
+*.rpm
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+
+# Misc
+*.tgz
+.npm
+.yarn-integrity
+.superpowers
