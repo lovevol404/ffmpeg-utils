@@ -15,7 +15,7 @@
     "build:linux": "npm run build && electron-builder --linux"
   },
   "build": {
-    "appId": "com.video-toolbox.app",
+    "appId": "com.lovevol404.app.video-toolbox",
     "productName": "视频工具箱",
     "directories": {
       "output": "release"
