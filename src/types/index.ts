@@ -1,5 +1,6 @@
 export * from './ffmpeg';
 export * from './task';
+export * from './gpu';
 
 interface FFmpegExecuteOptions {
   input: string;
@@ -24,6 +25,9 @@ declare global {
         getVideoInfo: (filePath: string) => Promise<import('./ffmpeg').VideoInfo | null>;
         onProgress: (callback: (progress: number) => void) => void;
       };
+      gpu: {
+        detect: () => Promise<import('./gpu').GPUCapability | null>;
+      };
       fs: {
         selectFile: (filterType?: 'video' | 'image' | 'subtitle') => Promise<string[]>;
         selectFolder: () => Promise<string | null>;
@@ -31,6 +35,11 @@ declare global {
         openPath: (path: string) => Promise<boolean>;
         showItemInFolder: (path: string) => Promise<boolean>;
         pathExists: (filePath: string) => Promise<boolean>;
+      };
+      store: {
+        get: (key: string) => Promise<unknown>;
+        set: (key: string, value: unknown) => Promise<void>;
+        delete: (key: string) => Promise<void>;
       };
     };
   }

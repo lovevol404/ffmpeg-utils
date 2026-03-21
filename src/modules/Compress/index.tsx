@@ -6,6 +6,7 @@ import { CommandPreview } from '@/components/CommandPreview';
 import { VideoPreviewButton } from '@/components/VideoPreview/VideoPreview';
 import { useAppStore } from '@/stores/appStore';
 import { useTaskStore } from '@/stores/taskStore';
+import { getVideoEncoder } from '@/utils/encoder';
 import type { VideoInfo } from '@/types';
 
 type CompressionMode = 'targetSize' | 'qualityFirst' | 'fastCompress';
@@ -68,7 +69,7 @@ export default function CompressModule() {
   const [outputDir, setOutputDir] = useState<string>('');
   const [outputFileName, setOutputFileName] = useState<string>('');
 
-  const { showCommand, setCurrentModule } = useAppStore();
+  const { showCommand, setCurrentModule, gpuAcceleration, detectedGPU } = useAppStore();
   const { addTask } = useTaskStore();
 
   useEffect(() => {
@@ -78,6 +79,10 @@ export default function CompressModule() {
     }
   }, [files]);
 
+  const encoder = useMemo(() => {
+    return getVideoEncoder(gpuAcceleration, 'h264', detectedGPU);
+  }, [gpuAcceleration, detectedGPU]);
+
   const command = useMemo(() => {
     if (files.length === 0) return '';
     const input = files[0].path;
@@ -86,16 +91,16 @@ export default function CompressModule() {
     switch (mode) {
       case 'targetSize':
         const targetBytes = targetSize * 1024 * 1024;
-        return `ffmpeg -i "${input}" -fs ${targetBytes} -c:v libx264 -c:a aac "${output}"`;
+        return `ffmpeg -i "${input}" -fs ${targetBytes} -c:v ${encoder} -c:a aac "${output}"`;
       case 'qualityFirst':
         const crf = Math.round(51 - (quality / 100) * 51);
-        return `ffmpeg -i "${input}" -c:v libx264 -crf ${crf} -c:a aac "${output}"`;
+        return `ffmpeg -i "${input}" -c:v ${encoder} -crf ${crf} -c:a aac "${output}"`;
       case 'fastCompress':
-        return `ffmpeg -i "${input}" -c:v libx264 -preset fast -c:a aac "${output}"`;
+        return `ffmpeg -i "${input}" -c:v ${encoder} -preset fast -c:a aac "${output}"`;
       default:
         return '';
     }
-  }, [files, mode, targetSize, quality, outputFileName]);
+  }, [files, mode, targetSize, quality, outputFileName, encoder]);
 
   const estimatedSize = useMemo(() => {
     if (files.length === 0) return null;

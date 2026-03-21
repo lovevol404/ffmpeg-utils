@@ -1,8 +1,11 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useTaskStore } from '@/stores/taskStore';
+import { useAppStore } from '@/stores/appStore';
+import { getVideoEncoder, getGPUEncodeArgs } from '@/utils/encoder';
 
 export function useTaskExecutor() {
   const { tasks, updateTask } = useTaskStore();
+  const { gpuAcceleration, detectedGPU } = useAppStore();
   const runningRef = useRef<Set<string>>(new Set());
   const processingTaskIdRef = useRef<string | null>(null);
   const maxConcurrent = 2;
@@ -31,16 +34,32 @@ export function useTaskExecutor() {
       startedAt: new Date(),
     });
 
-    let args: string[] = task.args ? [...task.args] : [];
+    const effectiveGpuType = task.gpuType || gpuAcceleration;
+    const codec = task.codec || 'h264';
+    const encoder = getVideoEncoder(effectiveGpuType, codec, detectedGPU);
     
-    if (!task.args) {
-      if (task.command.includes('-c:v')) {
-        const codecMatch = task.command.match(/-c:v\s+(\S+)/);
-        if (codecMatch) args.push('-c:v', codecMatch[1]);
+    let args: string[] = [];
+    
+    if (task.args && task.args.length > 0) {
+      args = [...task.args];
+      const encoderIndex = args.findIndex((_, i) => 
+        i > 0 && args[i - 1] === '-c:v'
+      );
+      if (encoderIndex === -1) {
+        args = ['-c:v', encoder, ...args];
+      } else {
+        args[encoderIndex] = encoder;
       }
-      if (task.command.includes('-c:a')) {
-        const audioCodecMatch = task.command.match(/-c:a\s+(\S+)/);
-        if (audioCodecMatch) args.push('-c:a', audioCodecMatch[1]);
+    } else {
+      args.push('-c:v', encoder);
+      args.push('-c:a', 'aac');
+      
+      if (effectiveGpuType !== 'none' && effectiveGpuType !== 'auto') {
+        const gpuArgs = getGPUEncodeArgs(effectiveGpuType, 22);
+        args.push(...gpuArgs);
+      } else if (effectiveGpuType === 'auto' && detectedGPU?.available) {
+        const gpuArgs = getGPUEncodeArgs(detectedGPU.type, 22);
+        args.push(...gpuArgs);
       }
     }
 
@@ -95,7 +114,7 @@ export function useTaskExecutor() {
           error: error.message || 'Execution failed',
         });
       });
-  }, [updateTask]);
+  }, [updateTask, gpuAcceleration, detectedGPU]);
 
   useEffect(() => {
     const pendingTasks = tasks.filter((t) => t.status === 'pending');

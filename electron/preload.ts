@@ -23,6 +23,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
       ipcRenderer.on('ffmpeg:progress', (_event, progress) => callback(progress));
     },
   },
+  gpu: {
+    detect: () => ipcRenderer.invoke('gpu:detect'),
+  },
   fs: {
     selectFile: (filterType?: 'video' | 'image' | 'subtitle') => ipcRenderer.invoke('fs:selectFile', filterType),
     selectFolder: () => ipcRenderer.invoke('fs:selectFolder'),

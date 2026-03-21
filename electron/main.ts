@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { initFFmpeg, executeFFmpeg, getFFmpegVersion, getVideoInfo } from './services/ffmpeg';
+import { detectGPU } from './services/gpuDetector';
 import Store from 'electron-store';
 import { ChildProcess } from 'child_process';
 
@@ -196,3 +197,13 @@ ipcMain.handle('fs:pathExists', async (_event, filePath: string) => {
 ipcMain.handle('store:get', (_event, key: string) => store.get(key));
 ipcMain.handle('store:set', (_event, key: string, value: unknown) => store.set(key, value));
 ipcMain.handle('store:delete', (_event, key: string) => store.delete(key));
+
+// GPU detection handler
+ipcMain.handle('gpu:detect', async () => {
+  try {
+    return await detectGPU();
+  } catch (err) {
+    console.error('GPU detection failed:', err);
+    return null;
+  }
+});

@@ -1,3 +1,5 @@
+import type { GPUType } from './gpu';
+
 export type TaskStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 export type TaskType = 
@@ -32,6 +34,8 @@ export interface Task {
   inputArgs?: string[];
   concatFileList?: string;
   args?: string[];
+  gpuType?: GPUType | 'auto';
+  codec?: 'h264' | 'hevc';
 }
 
 export interface TaskQueue {

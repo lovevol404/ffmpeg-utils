@@ -9,6 +9,7 @@ import EditModule from '@/modules/Edit';
 import CompressModule from '@/modules/Compress';
 import ExtractModule from '@/modules/Extract';
 import QueueModule from '@/modules/Queue';
+import SettingsModule from '@/modules/Settings';
 
 const { Sider, Content } = Layout;
 
@@ -18,6 +19,7 @@ const moduleMap = {
   compress: CompressModule,
   extract: ExtractModule,
   queue: QueueModule,
+  settings: SettingsModule,
 };
 
 export function MainLayout() {
