@@ -9,6 +9,7 @@ import EditModule from '@/modules/Edit';
 import CompressModule from '@/modules/Compress';
 import ExtractModule from '@/modules/Extract';
 import QueueModule from '@/modules/Queue';
+import SettingsModule from '@/modules/Settings';
 
 const { Sider, Content } = Layout;
 
@@ -18,6 +19,7 @@ const moduleMap = {
   compress: CompressModule,
   extract: ExtractModule,
   queue: QueueModule,
+  settings: SettingsModule,
 };
 
 export function MainLayout() {
@@ -61,7 +63,7 @@ export function MainLayout() {
             whiteSpace: 'nowrap',
             overflow: 'hidden',
           }}>
-            {collapsed ? '视频' : '视频工具箱'}
+            {collapsed ? 'FFmpeg' : 'FFmpeg工具箱'}
           </span>
         </div>
         <Sidebar collapsed={collapsed} />

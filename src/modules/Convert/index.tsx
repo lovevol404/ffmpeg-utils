@@ -7,6 +7,7 @@ import { VideoPreviewButton } from '@/components/VideoPreview/VideoPreview';
 import { useAppStore } from '@/stores/appStore';
 import { usePresetStore } from '@/stores/presetStore';
 import { useTaskStore } from '@/stores/taskStore';
+import { resolveEncoder } from '@/utils/encoder';
 import type { VideoInfo } from '@/types';
 
 const formats = [
@@ -85,7 +86,7 @@ export default function ConvertModule() {
   const [outputDir, setOutputDir] = useState<string>('');
   const [outputFileName, setOutputFileName] = useState<string>('');
   
-  const { showCommand, setCurrentModule } = useAppStore();
+  const { showCommand, setCurrentModule, gpuAcceleration, detectedGPU } = useAppStore();
   const { presets } = usePresetStore();
   const { addTask } = useTaskStore();
 
@@ -95,6 +96,10 @@ export default function ConvertModule() {
       setOutputFileName(`${baseName}.${format}`);
     }
   }, [files, format]);
+
+  const actualEncoder = useMemo(() => {
+    return resolveEncoder(codec, gpuAcceleration, detectedGPU);
+  }, [codec, gpuAcceleration, detectedGPU]);
 
   const getFilterArgs = () => {
     const filters: string[] = [];
@@ -120,7 +125,7 @@ export default function ConvertModule() {
     const videoFilter = getFilterArgs();
     const audioFilter = getAudioFilter();
     
-    let cmd = `ffmpeg -i "${files[0].path}" -c:v ${codec} -c:a aac`;
+    let cmd = `ffmpeg -i "${files[0].path}" -c:v ${actualEncoder} -c:a aac`;
     
     if (videoFilter) {
       cmd += ` -vf "${videoFilter}"`;
@@ -131,7 +136,7 @@ export default function ConvertModule() {
     
     cmd += ` "${outputFileName || 'output.' + format}"`;
     return cmd;
-  }, [files, codec, resolution, speed, outputFileName, format]);
+  }, [files, actualEncoder, resolution, speed, outputFileName, format]);
 
   const handleFilesSelected = (selectedFiles: VideoInfo[]) => {
     setFiles(selectedFiles);

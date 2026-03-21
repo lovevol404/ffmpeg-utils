@@ -16,7 +16,7 @@
   },
   "build": {
     "appId": "com.video-toolbox.app",
-    "productName": "视频工具箱",
+    "productName": "FFmpeg工具箱",
     "directories": {
       "output": "release"
     },
@@ -47,7 +47,16 @@
       }
     ],
     "win": {
-      "target": "nsis",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
       "icon": "resources/icon.ico"
     },
     "mac": {
