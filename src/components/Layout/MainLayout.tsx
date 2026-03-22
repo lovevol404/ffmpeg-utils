@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Layout, Button, Tooltip } from 'antd';
+import { useState, useEffect } from 'react';
+import { Layout, Button, Tooltip, Result, Spin } from 'antd';
 import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 import { Terminal } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { useAppStore } from '@/stores/appStore';
+import { useAIStore } from '@/stores/aiStore';
 import ConvertModule from '@/modules/Convert';
 import EditModule from '@/modules/Edit';
 import CompressModule from '@/modules/Compress';
@@ -15,21 +16,93 @@ import AIWorkshopModule from '@/modules/AIWorkshop';
 
 const { Sider, Content } = Layout;
 
-const moduleMap = {
-  convert: ConvertModule,
-  edit: EditModule,
-  compress: CompressModule,
-  extract: ExtractModule,
-  subtitle: SubtitleModule,
-  aiworkshop: AIWorkshopModule,
-  queue: QueueModule,
-  settings: SettingsModule,
-};
-
 export function MainLayout() {
   const { currentModule, showCommand, toggleShowCommand } = useAppStore();
-  const ModuleComponent = moduleMap[currentModule];
+  const { setServiceStatus, setConfig } = useAIStore();
   const [collapsed, setCollapsed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    startAIService();
+  }, []);
+
+  const startAIService = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const status = await window.electronAPI?.ai.status();
+      
+      if (status?.running) {
+        setServiceStatus(true, status.baseUrl);
+        await loadAIConfig();
+        setLoading(false);
+      } else {
+        const result = await window.electronAPI?.ai.start();
+        if (result?.success) {
+          setServiceStatus(true, result.baseUrl || '');
+          await loadAIConfig();
+          setLoading(false);
+        } else {
+          setError(result?.error || 'AI 服务启动失败');
+          setLoading(false);
+        }
+      }
+    } catch (err) {
+      setError((err as Error).message);
+      setLoading(false);
+    }
+  };
+
+  const loadAIConfig = async () => {
+    const config = await window.electronAPI?.store.get('aiConfig');
+    if (config) {
+      setConfig(config as any);
+      await window.electronAPI?.ai.configure(config as any);
+    }
+  };
+
+  const renderModule = (moduleKey: string, Component: React.ComponentType) => (
+    <div style={{ display: currentModule === moduleKey ? 'block' : 'none', height: '100%' }}>
+      <Component />
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div style={{ 
+        height: '100vh', 
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: '#F0FDFA',
+        gap: 24,
+      }}>
+        <Spin size="large" />
+        <div style={{ fontSize: 16, color: '#134E4A' }}>正在启动 AI 服务...</div>
+        <div style={{ fontSize: 12, color: '#64748B' }}>首次启动可能需要几秒钟</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F0FDFA' }}>
+        <Result
+          status="error"
+          title="AI 服务启动失败"
+          subTitle={error}
+          extra={[
+            <Button type="primary" key="retry" onClick={startAIService}>
+              重试
+            </Button>,
+          ]}
+        />
+      </div>
+    );
+  }
 
   return (
     <Layout style={{ minHeight: '100vh', width: '100%' }}>
@@ -112,7 +185,14 @@ export function MainLayout() {
           }}
         >
           <div style={{ maxWidth: currentModule === 'aiworkshop' ? '100%' : 900, margin: '0 auto', width: '100%', height: currentModule === 'aiworkshop' ? 'calc(100vh - 96px)' : 'auto' }}>
-            <ModuleComponent />
+            {renderModule('aiworkshop', AIWorkshopModule)}
+            {renderModule('convert', ConvertModule)}
+            {renderModule('edit', EditModule)}
+            {renderModule('compress', CompressModule)}
+            {renderModule('extract', ExtractModule)}
+            {renderModule('subtitle', SubtitleModule)}
+            {renderModule('queue', QueueModule)}
+            {renderModule('settings', SettingsModule)}
           </div>
         </Content>
       </Layout>

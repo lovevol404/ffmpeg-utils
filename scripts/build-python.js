@@ -104,6 +104,7 @@ function buildPython() {
     '--collect-all', 'starlette',
     '--collect-all', 'sse_starlette',
     '--collect-all', 'faster_whisper',
+    '--collect-all', 'torch',
     'main.py',
   ];
 
