@@ -107,6 +107,14 @@ function installDependencies() {
   console.log('Installing Python dependencies...');
   
   try {
+    // 先安装CUDA版PyTorch
+    console.log('Installing PyTorch with CUDA support...');
+    execSync(`"${pip}" install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121`, {
+      cwd: PYTHON_DIR,
+      stdio: 'inherit',
+    });
+    
+    // 再安装其他依赖
     execSync(`"${pip}" install -r "${REQUIREMENTS_FILE}" -i https://mirrors.aliyun.com/pypi/simple`, {
       cwd: PYTHON_DIR,
       stdio: 'inherit',
