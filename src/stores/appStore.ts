@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { GPUType, GPUCapability } from '@/types/gpu';
 
 interface AppState {
-  currentModule: 'convert' | 'edit' | 'compress' | 'extract' | 'queue' | 'settings';
+  currentModule: 'convert' | 'edit' | 'compress' | 'extract' | 'subtitle' | 'queue' | 'settings' | 'aiworkshop';
   showCommand: boolean;
   theme: 'light' | 'dark';
   language: 'zh-CN' | 'en-US';
@@ -18,7 +18,7 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  currentModule: 'convert',
+  currentModule: 'aiworkshop',
   showCommand: true,
   theme: 'light',
   language: 'zh-CN',

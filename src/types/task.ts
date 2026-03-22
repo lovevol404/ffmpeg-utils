@@ -36,6 +36,10 @@ export interface Task {
   args?: string[];
   gpuType?: GPUType | 'auto';
   codec?: 'h264' | 'hevc';
+  dependsOn?: string[];
+  // 工作流相关
+  workflowId?: string;        // 所属工作流ID
+  workflowIndex?: number;     // 在工作流中的顺序（用于排序）
 }
 
 export interface TaskQueue {

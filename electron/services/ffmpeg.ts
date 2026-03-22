@@ -130,6 +130,10 @@ export function getFFmpegPath(): string {
   return ffmpegPath;
 }
 
+export function getFFprobePath(): string {
+  return ffprobePath;
+}
+
 export interface FFmpegOptions {
   input: string;
   output: string;
@@ -180,13 +184,14 @@ export function executeFFmpeg(options: FFmpegOptions): ChildProcess {
       output,
     ];
   } else {
+    // FFmpeg 命令顺序: 输入 -> 滤镜 -> 编码参数 -> 输出
     defaultArgs = [
       ...(preInputArgs || []),
       '-i', input,
       ...extraInputArgs,
+      ...filterArgs,  // 滤镜在编码参数之前
       '-y',
-      ...(args || []),
-      ...filterArgs,
+      ...(args || []),  // 编码参数
       output,
     ];
   }

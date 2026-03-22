@@ -8,8 +8,10 @@ import ConvertModule from '@/modules/Convert';
 import EditModule from '@/modules/Edit';
 import CompressModule from '@/modules/Compress';
 import ExtractModule from '@/modules/Extract';
+import SubtitleModule from '@/modules/Subtitle';
 import QueueModule from '@/modules/Queue';
 import SettingsModule from '@/modules/Settings';
+import AIWorkshopModule from '@/modules/AIWorkshop';
 
 const { Sider, Content } = Layout;
 
@@ -18,6 +20,8 @@ const moduleMap = {
   edit: EditModule,
   compress: CompressModule,
   extract: ExtractModule,
+  subtitle: SubtitleModule,
+  aiworkshop: AIWorkshopModule,
   queue: QueueModule,
   settings: SettingsModule,
 };
@@ -107,7 +111,7 @@ export function MainLayout() {
             flex: 1,
           }}
         >
-          <div style={{ maxWidth: 900, margin: '0 auto', width: '100%' }}>
+          <div style={{ maxWidth: currentModule === 'aiworkshop' ? '100%' : 900, margin: '0 auto', width: '100%', height: currentModule === 'aiworkshop' ? 'calc(100vh - 96px)' : 'auto' }}>
             <ModuleComponent />
           </div>
         </Content>
