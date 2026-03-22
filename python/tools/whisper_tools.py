@@ -137,11 +137,17 @@ def resolve_model_path(model_size: str, model_path: Optional[str] = None) -> str
     Returns:
         Path or model identifier to load
     """
+    logger.info(f"resolve_model_path: model_size={model_size}, model_path={model_path}")
+    
     if not model_path or not os.path.isdir(model_path):
+        logger.info(f"model_path is empty or not a directory, using default: {model_size}")
         return model_size
+    
+    logger.info(f"Checking model_path directory: {model_path}")
     
     if os.path.exists(os.path.join(model_path, "model.bin")) or \
        os.path.exists(os.path.join(model_path, "config.json")):
+        logger.info(f"Found model directly in model_path: {model_path}")
         return model_path
     
     possible_subdirs = [
@@ -154,11 +160,16 @@ def resolve_model_path(model_size: str, model_path: Optional[str] = None) -> str
         possible_subdirs.insert(1, os.path.join(model_path, "large-v3"))
     
     for subdir in possible_subdirs:
+        logger.info(f"Checking subdir: {subdir}, exists={os.path.isdir(subdir)}")
         if os.path.isdir(subdir):
-            if os.path.exists(os.path.join(subdir, "model.bin")) or \
-               os.path.exists(os.path.join(subdir, "config.json")):
+            has_model_bin = os.path.exists(os.path.join(subdir, "model.bin"))
+            has_config = os.path.exists(os.path.join(subdir, "config.json"))
+            logger.info(f"  model.bin: {has_model_bin}, config.json: {has_config}")
+            if has_model_bin or has_config:
+                logger.info(f"Found model in subdir: {subdir}")
                 return subdir
     
+    logger.info(f"No model found in model_path, falling back to: {model_size}")
     return model_size
 
 
@@ -195,11 +206,14 @@ def get_whisper_model(model_size: str = "base", model_path: Optional[str] = None
         except ImportError:
             logger.info("PyTorch not installed or CUDA not available, using CPU")
         
+        logger.info(f"Loading WhisperModel from: {resolved_path}, device={device}, compute_type={compute_type}")
+        
         _whisper_model_cache = (cache_key, WhisperModel(
             resolved_path,
             device=device,
             compute_type=compute_type
         ))
+        logger.info(f"WhisperModel loaded successfully from: {resolved_path}")
     return _whisper_model_cache[1]
 
 

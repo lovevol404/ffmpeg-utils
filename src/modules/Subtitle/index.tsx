@@ -61,8 +61,17 @@ export default function SubtitleModule() {
   const [subtitleFormat, setSubtitleFormat] = useState('srt');
   const [transcribing, setTranscribing] = useState(false);
   const [transcribeProgress, setTranscribeProgress] = useState<TranscribeProgress | null>(null);
+  const [whisperModelPath, setWhisperModelPath] = useState<string>('');
 
   useEffect(() => {
+    const loadWhisperModelPath = async () => {
+      const path = await window.electronAPI?.store.get('whisperModelPath');
+      if (path) {
+        setWhisperModelPath(path as string);
+      }
+    };
+    loadWhisperModelPath();
+    
     if (window.electronAPI?.ai?.onTranscribeProgress) {
       window.electronAPI.ai.onTranscribeProgress((progress: TranscribeProgress) => {
         setTranscribeProgress(progress);
@@ -139,6 +148,7 @@ export default function SubtitleModule() {
         language: subtitleLanguage === 'auto' ? undefined : subtitleLanguage,
         modelSize: subtitleModel as 'tiny' | 'base' | 'small' | 'medium' | 'large-v3',
         outputFormat: subtitleFormat as 'srt' | 'vtt' | 'ass',
+        modelPath: whisperModelPath || undefined,
       });
 
       console.log('[Subtitle] Result:', result);

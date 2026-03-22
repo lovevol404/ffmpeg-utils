@@ -7,48 +7,31 @@ import { WorkflowPreview } from './WorkflowPreview';
 import { useAIStore } from '@/stores/aiStore';
 
 export default function AIWorkshopModule() {
-  const { isServiceRunning, setServiceStatus, setConfig, workDirectory, setWorkDirectory, startNewSession } = useAIStore();
+  const { isServiceRunning, workDirectory, setWorkDirectory, startNewSession } = useAIStore();
   const [checking, setChecking] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showDirModal, setShowDirModal] = useState(false);
 
   useEffect(() => {
-    checkAndStartService();
+    checkServiceStatus();
   }, []);
 
-  const checkAndStartService = async () => {
+  const checkServiceStatus = async () => {
     setChecking(true);
-    setError(null);
 
     try {
       const status = await window.electronAPI?.ai.status();
       
       if (status?.running) {
-        setServiceStatus(true, status.baseUrl);
-        await loadConfig();
-      } else {
-        const result = await window.electronAPI?.ai.start();
-        if (result?.success) {
-          setServiceStatus(true, result.baseUrl || '');
-          await loadConfig();
-        } else {
-          setError(result?.error || 'AI 服务启动失败');
-        }
+        await loadWorkDirectory();
       }
     } catch (err) {
-      setError((err as Error).message);
+      console.warn('Check service status failed:', err);
     } finally {
       setChecking(false);
     }
   };
 
-  const loadConfig = async () => {
-    const config = await window.electronAPI?.store.get('aiConfig');
-    if (config) {
-      setConfig(config as any);
-      await window.electronAPI?.ai.configure(config as any);
-    }
-    
+  const loadWorkDirectory = async () => {
     const savedDir = await window.electronAPI?.store.get('workDirectory');
     if (savedDir) {
       setWorkDirectory(savedDir as string);
@@ -88,22 +71,6 @@ export default function AIWorkshopModule() {
     );
   }
 
-  if (error) {
-    return (
-      <Alert
-        type="error"
-        message="AI 服务启动失败"
-        description={error}
-        showIcon
-        action={
-          <Button size="small" onClick={checkAndStartService}>
-            重试
-          </Button>
-        }
-      />
-    );
-  }
-
   if (!isServiceRunning) {
     return (
       <Alert
@@ -111,11 +78,6 @@ export default function AIWorkshopModule() {
         message="AI 服务未运行"
         description="请确保 Python 后端服务已启动。开发模式请运行: npm run dev:python"
         showIcon
-        action={
-          <Button size="small" onClick={checkAndStartService}>
-            启动服务
-          </Button>
-        }
       />
     );
   }
