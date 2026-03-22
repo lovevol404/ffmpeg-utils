@@ -12,6 +12,8 @@ interface TaskState {
   clearCompleted: () => void;
   clearAll: () => void;
   getTasksByStatus: (status: TaskStatus) => Task[];
+  canStartTask: (taskId: string) => boolean;
+  getDependentTasks: (taskId: string) => Task[];
   loadTasks: () => Promise<void>;
   saveTasks: () => Promise<void>;
 }
@@ -32,7 +34,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       progress: 0,
       createdAt: new Date(),
     };
-    set((state) => ({ tasks: [...state.tasks, task] }));
+    // 设置 loaded: true 防止 loadTasks 被错误调用
+    set((state) => ({ tasks: [...state.tasks, task], loaded: true }));
     get().saveTasks();
     return id;
   },
@@ -53,17 +56,17 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     get().saveTasks();
   },
   
-  cancelTask: (id) => {
-    if (window.electronAPI?.ffmpeg?.cancel) {
-      window.electronAPI.ffmpeg.cancel();
-    }
-    set((state) => ({
-      tasks: state.tasks.map((task) =>
-        task.id === id ? { ...task, status: 'failed' as TaskStatus, error: '用户取消' } : task
-      ),
-    }));
-    get().saveTasks();
-  },
+cancelTask: (id) => {
+      if (window.electronAPI?.ffmpeg?.cancel) {
+        window.electronAPI.ffmpeg.cancel(id);  // 取消特定任务
+      }
+      set((state) => ({
+        tasks: state.tasks.map((task) =>
+          task.id === id ? { ...task, status: 'failed' as TaskStatus, error: '用户取消' } : task
+        ),
+      }));
+      get().saveTasks();
+    },
   
   clearCompleted: () => {
     set((state) => ({
@@ -81,7 +84,27 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     return get().tasks.filter((task) => task.status === status);
   },
   
+  canStartTask: (taskId) => {
+    const task = get().tasks.find((t) => t.id === taskId);
+    if (!task || !task.dependsOn || task.dependsOn.length === 0) {
+      return true;
+    }
+    return task.dependsOn.every((depId) => {
+      const depTask = get().tasks.find((t) => t.id === depId);
+      return depTask?.status === 'completed';
+    });
+  },
+  
+  getDependentTasks: (taskId) => {
+    return get().tasks.filter((task) => task.dependsOn?.includes(taskId));
+  },
+  
   loadTasks: async () => {
+    // 防止重复加载
+    if (get().loaded) {
+      return;
+    }
+    
     if (!window.electronAPI?.store?.get) {
       set({ loaded: true });
       return;

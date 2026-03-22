@@ -6,14 +6,18 @@ import {
   Image,
   ListOrdered,
   Settings,
+  Sparkles,
+  FileText,
 } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 
 const menuItems = [
+  { key: 'aiworkshop', icon: <Sparkles size={18} />, label: 'AI 工作台' },
   { key: 'convert', icon: <Film size={18} />, label: '格式转换' },
   { key: 'edit', icon: <Scissors size={18} />, label: '视频编辑' },
   { key: 'compress', icon: <FileVideo size={18} />, label: '压缩优化' },
   { key: 'extract', icon: <Image size={18} />, label: '媒体提取' },
+  { key: 'subtitle', icon: <FileText size={18} />, label: '字幕提取' },
   { key: 'queue', icon: <ListOrdered size={18} />, label: '任务队列' },
 ];
 

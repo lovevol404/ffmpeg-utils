@@ -131,7 +131,7 @@ export default function ExtractModule() {
       case 'gif': {
         const gifDuration = timeToSeconds(gifEnd) - timeToSeconds(gifStart);
         const width = gifWidth || files[0].width || 480;
-        return `ffmpeg -ss ${gifStart} -t ${gifDuration} -i ${input} -vf "fps=${gifFps},scale=${width}:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 output.gif`;
+        return `ffmpeg -ss ${gifStart} -t ${gifDuration} -i ${input} -vf "fps=${gifFps},scale=${width}:-2:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse" -loop 0 output.gif`;
       }
       case 'audio': {
         const codecMap: Record<string, string> = {
@@ -306,7 +306,7 @@ const estimateGifSize = () => {
 
 const getGifFilter = () => {
     const width = gifWidth || (files.length > 0 ? files[0].width : 480);
-    return `fps=${gifFps},scale=${width}:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`;
+    return `fps=${gifFps},scale=${width}:-2:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`;
   };
 
   const tabItems = [

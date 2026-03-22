@@ -48,6 +48,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 .Python
+python/build/
+resources/python/
+*.spec
 
 # Electron
 release/
